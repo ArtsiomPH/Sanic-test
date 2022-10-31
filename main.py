@@ -3,7 +3,9 @@ from sanic import Sanic
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
-from views import signin
+from signin import signin
+from views import users
+
 
 from contextvars import ContextVar
 
@@ -13,6 +15,7 @@ SQLALCHEMY_DB_URL = "postgresql+asyncpg://test_acc:12345@localhost/sanic_test"
 
 app = Sanic('test_app')
 app.blueprint(signin)
+app.blueprint(users)
 
 engine = create_async_engine(SQLALCHEMY_DB_URL, echo=True)
 _sessionmaker = sessionmaker(engine, AsyncSession, expire_on_commit=False)

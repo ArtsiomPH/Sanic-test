@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+sanic = "*"
+sqlalchemy = "*"
+asyncpg = "*"
+greenlet = "*"
+alembic = "*"
+passlib = {extras = ["bcrypt"], version = "*"}
+sanic-ext = "*"
+pydantic = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"

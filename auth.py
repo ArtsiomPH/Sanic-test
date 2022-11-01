@@ -100,7 +100,7 @@ def get_hashed_password(password: str):
     return pwd_context.hash(password)
 
 
-@auth.post("/signin")
+@auth.post("/")
 @validate(form=AuthForm)
 async def create_user(request: Request, body: AuthForm):
     session = request.ctx.session
@@ -114,7 +114,7 @@ async def create_user(request: Request, body: AuthForm):
             if not users:
                 user = User(login=login, password=hashed_password, is_admin=True, is_active=True)
                 session.add(user)
-                return text(f'Hello admin {user.login}!')
+                return text(f'Hello admin {user.login}!', status=201)
             else:
                 user = User(login=login, password=hashed_password)
                 session.add(user)

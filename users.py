@@ -28,11 +28,16 @@ async def change_user_status(request: Request, pk: int):
 
     session = request.ctx.session
     async with session.begin():
-        await session.execute(update(User).where(User.id == pk).values(is_active=(status.lower() == 'true')))
-        res = await session.execute(select(User).where(User.id == pk))
+        result_rows = await session.execute(update(User).where(User.id == pk)
+                                            .values(is_active=(status.lower() == 'true'))
+                                            .returning(User.id,
+                                                       User.login,
+                                                       User.is_admin,
+                                                       User.is_active))
+    user_rows: tuple = result_rows.first()
 
-    changed_user = res.scalar()
-    if changed_user is None:
+    if user_rows is None:
         return text(f'User with id = {pk} is not exist.', status=400)
 
-    return json({'changed': changed_user.to_dict()})
+    pk, login, is_admin, is_active = user_rows
+    return json({'changed': User(id=pk, login=login, is_admin=is_admin, is_active=is_active).to_dict()})

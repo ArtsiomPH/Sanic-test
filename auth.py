@@ -13,8 +13,7 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, update
 
-
-signin = Blueprint('signin', url_prefix='/signin')
+auth = Blueprint('auth', url_prefix='/auth')
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -101,7 +100,7 @@ def get_hashed_password(password: str):
     return pwd_context.hash(password)
 
 
-@signin.post("/")
+@auth.post("/signin")
 @validate(form=AuthForm)
 async def create_user(request: Request, body: AuthForm):
     session = request.ctx.session
@@ -124,10 +123,10 @@ async def create_user(request: Request, body: AuthForm):
 
     temp_token_expire = timedelta(days=TEMP_ACCESS_TOKEN_EXPIRE_DAYS)
     temp_token = create_access_token({"login": user.login}, temp_token_expire)
-    return text(f'Follow this link for activation. http://127.0.0.1:8000/signin/activation/{temp_token}')
+    return text(f'Follow this link for activation. http://127.0.0.1:8000/auth/activation/{temp_token}')
 
 
-@signin.get('/activation/<temp_token:str>')
+@auth.get('/activation/<temp_token:str>')
 async def user_activation(request: Request, temp_token):
     session = request.ctx.session
     user = await get_current_user(request, temp_token)
@@ -135,11 +134,11 @@ async def user_activation(request: Request, temp_token):
         async with session.begin():
             await session.execute(update(User).where(User.login == user.login).values(is_active=True))
         return text("Your account was activated, please follow the link to get a permanent token."
-                    "http://127.0.0.1:8000/signin/token")
+                    "http://127.0.0.1:8000/auth/token")
     return text('Your account is already activated')
 
 
-@signin.post('/token')
+@auth.post('/token')
 @validate(form=AuthForm)
 async def get_access_token(request: Request, body: AuthForm):
     login = body.login
@@ -159,5 +158,3 @@ async def get_access_token(request: Request, body: AuthForm):
         data={"login": user.login}, expires_delta=access_token_expires
     )
     return json({"access_token": access_token, "token_type": "bearer"})
-
-

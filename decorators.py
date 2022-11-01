@@ -1,4 +1,6 @@
-from signin import *
+from auth import get_current_active_user
+
+from sanic import text
 
 
 def admin_only(func):

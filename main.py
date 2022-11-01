@@ -3,8 +3,8 @@ from sanic import Sanic
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
-from signin import signin
-from views import users
+from auth import auth
+from users import users
 
 
 from contextvars import ContextVar
@@ -14,7 +14,7 @@ from models import User
 SQLALCHEMY_DB_URL = "postgresql+asyncpg://test_acc:12345@localhost/sanic_test"
 
 app = Sanic('test_app')
-app.blueprint(signin)
+app.blueprint(auth)
 app.blueprint(users)
 
 engine = create_async_engine(SQLALCHEMY_DB_URL, echo=True)

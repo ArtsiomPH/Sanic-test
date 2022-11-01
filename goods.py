@@ -34,10 +34,20 @@ async def create_goods(request: Request):
     return json([item.to_dict() for item in goods_to_add], status=201)
 
 
-@goods.route('/<pk:int>', methods=['PATCH', 'DELETE'])
+@goods.route('/<pk:int>', methods=['GET', 'PATCH', 'DELETE'])
 @admin_only
 async def update_delete_goods(request: Request, pk: int):
     session = request.ctx.session
+    if request.method == 'GET':
+        async with session.begin():
+            result = await session.execute(select(Goods).where(Goods.id == pk))
+
+        item = result.scalar()
+        if item is None:
+            return text(f'Goods with id = {pk} is not exist.', status=400)
+
+        return json(item.to_dict())
+
     if request.method == 'PATCH':
         body: dict = request.json
 

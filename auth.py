@@ -92,7 +92,7 @@ async def get_user(request, login):
 async def get_current_active_user(request, token):
     user = await get_current_user(request, token)
     if not user.is_active:
-        return SanicException(status_code=400, message='Inactive user')
+        raise SanicException(status_code=400, message='Inactive user')
     return user
 
 

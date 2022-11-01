@@ -22,11 +22,11 @@ class User(BaseModel):
 
 
 class Goods(BaseModel):
-    __table_name__ = "Goods"
+    __tablename__ = "Goods"
 
-    title = Column(String, length=100)
+    title = Column(String(length=100))
     description = Column(Text)
-    price = Column(Numeric, precision=8, scale=2)
+    price = Column(Numeric(precision=8, scale=2))
 
     def to_dict(self):
         return {'id': self.id, 'title': self.title, 'description': self.description, 'price': self.price}

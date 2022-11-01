@@ -5,17 +5,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from auth import auth
 from users import users
-
+from goods import goods
 
 from contextvars import ContextVar
 
-from models import User
 
 SQLALCHEMY_DB_URL = "postgresql+asyncpg://test_acc:12345@localhost/sanic_test"
 
 app = Sanic('test_app')
 app.blueprint(auth)
 app.blueprint(users)
+app.blueprint(goods)
 
 engine = create_async_engine(SQLALCHEMY_DB_URL, echo=True)
 _sessionmaker = sessionmaker(engine, AsyncSession, expire_on_commit=False)

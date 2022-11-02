@@ -15,9 +15,9 @@ async def get_goods_list(request: Request):
 
     async with session.begin():
         result = await session.execute(select(Goods).order_by(Goods.id))
-        goods_list = result.all()
+        goods_list = result.scalars()
 
-    return json([item[0].to_dict() for item in goods_list])
+    return json([item.to_dict() for item in goods_list])
 
 
 @goods.post('/')
@@ -36,7 +36,7 @@ async def create_goods(request: Request):
 
 @goods.route('/<pk:int>', methods=['GET', 'PATCH', 'DELETE'])
 @admin_only
-async def update_delete_goods(request: Request, pk: int):
+async def get_update_delete_goods(request: Request, pk: int):
     session = request.ctx.session
     if request.method == 'GET':
         async with session.begin():
@@ -70,11 +70,11 @@ async def update_delete_goods(request: Request, pk: int):
         async with session.begin():
             result = await session.execute(delete(Goods).where(Goods.id == pk).returning(Goods.title))
 
-        title = result.first()
+        title = result.scalar()
         if title is None:
             return text(f'Goods with id = {pk} is not exist.', status=400)
 
-        return text(f'{title[0]} was deleted')
+        return text(f'{title} was deleted')
 
 
 

@@ -10,6 +10,7 @@ from models import User
 
 from passlib.context import CryptContext
 
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, update
 
@@ -84,7 +85,7 @@ async def get_current_user(request, token):
 async def get_user(request, login):
     session = request.ctx.session
     async with session.begin():
-        result = await session.execute(select(User).where(User.login == login))
+        result = await session.execute(select(User).where(User.login == login).options(selectinload(User.bill)))
     user = result.scalar()
     return user
 

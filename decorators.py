@@ -30,9 +30,7 @@ def active_user_only(wrapped):
             if not request.token:
                 return text("You are unauthorized.", 401)
 
-            user = await get_current_active_user(request, request.token)
-
-            if user:
+            if request.ctx.current_user:
                 result = await func(request, *args, **kwargs)
                 return result
 

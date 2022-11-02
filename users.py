@@ -1,11 +1,11 @@
-from auth import get_all_user_objects
 from models import User
 
 from sanic import Blueprint, json, Request, text
 
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 
-from decorators import admin_only
+from decorators import admin_only, active_user_only
 
 users = Blueprint('users', url_prefix='/users')
 
@@ -15,8 +15,11 @@ users = Blueprint('users', url_prefix='/users')
 async def get_users_list(request: Request):
     session = request.ctx.session
     async with session.begin():
-        users_list = await get_all_user_objects(session)
-    return json([user[0].to_dict() for user in users_list])
+        res_rows = await session.execute(select(User).options(selectinload(User.bill)))
+
+    user_objects = res_rows.scalars()
+
+    return json([user.to_dict() for user in user_objects])
 
 
 @users.patch('/<pk:int>')
@@ -41,3 +44,15 @@ async def change_user_status(request: Request, pk: int):
 
     pk, login, is_admin, is_active = user_rows
     return json({'changed': User(id=pk, login=login, is_admin=is_admin, is_active=is_active).to_dict()})
+
+
+@users.get('/me')
+@active_user_only
+async def current_user_info(request):
+    current_user = request.ctx.current_user
+
+    return json(current_user.to_dict())
+
+
+
+

@@ -1,4 +1,4 @@
-from models import User
+from models import User, Transaction
 
 from sanic import Blueprint, json, Request, text
 
@@ -50,9 +50,19 @@ async def change_user_status(request: Request, pk: int):
 @active_user_only
 async def current_user_info(request):
     current_user = request.ctx.current_user
-
     return json(current_user.to_dict())
 
 
+@users.get('/me/transactions')
+@active_user_only
+async def current_user_transaction_history(request):
+    current_user = request.ctx.current_user
+    session = request.ctx.session
 
+    bills = [bill['bill_id'] for bill in current_user.to_dict()['bills']]
 
+    async with session.begin():
+        result_rows = await session.execute(select(Transaction).where(Transaction.bill_id.in_(bills)))
+
+    transactions = result_rows.scalars()
+    return json([transaction.to_dict() for transaction in transactions])

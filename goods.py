@@ -1,13 +1,23 @@
+import datetime
+
 from sanic import Blueprint, Request, json, text
 from sanic.exceptions import NotFound, BadRequest
 
-from models import Goods
+from models import Goods, Bill
 from decorators import admin_only, active_user_only
 
 from sqlalchemy import select, update, delete
 
-
 goods = Blueprint('goods', url_prefix='/goods')
+
+
+async def update_user_balance(requset, bill_id, balance):
+    session = requset.ctx.session
+
+    async with session.begin():
+        await session.execute(update(Bill).where(Bill.id == bill_id).values(balance=balance))
+
+    print('!!!!update ended!!!!')
 
 
 async def get_element_by_id(session, model: Goods, element_id: int):
@@ -36,19 +46,30 @@ async def get_goods_list(request: Request):
 @active_user_only
 async def buy_goods(request: Request, goods_id: int):
     bill_id = int(request.form.get('bill_id'))
-    current_user = request.ctx.current_user
-    bills_list = [bill['bill_id'] for bill in current_user.to_dict().get('bills')]
-    session = request.ctx.session
-
-    if bill_id not in bills_list:
-        return text('Please enter your own bill\'s id')
 
     if bill_id is None:
         return text('Please enter your bill\'s id')
 
+    current_user = request.ctx.current_user
+    bills_list = [bill['bill_id'] for bill in current_user.to_dict().get('bills')]
+
+    if bill_id not in bills_list:
+        return text('Please enter your own bill\'s id')
+
+    session = request.ctx.session
+
     goods = await get_element_by_id(session, Goods, goods_id)
 
-    return text('ok')
+    bill_balance = [bill_object.balance for bill_object in current_user.bill if bill_object.id == bill_id][0]
+
+    if goods.price > bill_balance:
+        return text('Operation prohibited. Not enough funds')
+
+    new_balance = bill_balance - goods.price
+
+    request.app.add_task(update_user_balance(request, bill_id, new_balance))
+
+    return text('Product purchased')
 
 
 @goods.post('/')
@@ -101,6 +122,3 @@ async def get_update_delete_goods(request: Request, goods_id: int):
             raise NotFound(f'Goods with id = {goods_id} is not exist.')
 
         return text(f'{title} was deleted')
-
-
-

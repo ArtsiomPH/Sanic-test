@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from auth import auth, get_current_active_user
 from users import users
 from goods import goods
+from payment import payment
 
 from contextvars import ContextVar
 
@@ -16,6 +17,7 @@ app = Sanic('test_app')
 app.blueprint(auth)
 app.blueprint(users)
 app.blueprint(goods)
+app.blueprint(payment)
 
 engine = create_async_engine(SQLALCHEMY_DB_URL, echo=True)
 _sessionmaker = sessionmaker(engine, AsyncSession, expire_on_commit=False)

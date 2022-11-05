@@ -20,6 +20,7 @@ def admin_only(wrapped):
             return text("Access denied. You aren't admin", 400)
 
         return wrapper
+
     return decorator(wrapped)
 
 
@@ -35,5 +36,5 @@ def active_user_only(wrapped):
                 return result
 
         return wrapper
-    return decorator(wrapped)
 
+    return decorator(wrapped)

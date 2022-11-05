@@ -38,11 +38,11 @@ def create_access_token(data: dict, expires_delta: timedelta) -> str:
     return encoded_jwt
 
 
-def verify_password(password, hashed_password):
+def verify_password(password: str, hashed_password: str):
     return pwd_context.verify(password, hashed_password)
 
 
-async def authenticate_user(request, login, password) -> User | bool:
+async def authenticate_user(request: Request, login: str, password: str) -> User | bool:
     user = await get_user(request, login)
 
     if not user:
@@ -59,7 +59,7 @@ async def get_all_user_objects(session):
     return users
 
 
-async def get_current_user(request, token):
+async def get_current_user(request: Request, token: str):
     credentials_exception = SanicException(
         status_code=401,
         message="Could not validate credentials",
@@ -82,7 +82,7 @@ async def get_current_user(request, token):
     return user
 
 
-async def get_user(request, login):
+async def get_user(request: Request, login: str):
     session = request.ctx.session
     async with session.begin():
         result = await session.execute(select(User).where(User.login == login).options(selectinload(User.bill)))
@@ -90,7 +90,7 @@ async def get_user(request, login):
     return user
 
 
-async def get_current_active_user(request, token):
+async def get_current_active_user(request: Request, token: str):
     user = await get_current_user(request, token)
     if not user.is_active:
         raise SanicException(status_code=400, message='Inactive user')
@@ -124,11 +124,12 @@ async def create_user(request: Request, body: AuthForm):
 
     temp_token_expire = timedelta(days=TEMP_ACCESS_TOKEN_EXPIRE_DAYS)
     temp_token = create_access_token({"login": user.login}, temp_token_expire)
-    return text(f'Follow this link for activation. http://127.0.0.1:8000/auth/activation/{temp_token}')
+    return text(f'Follow this link for activation. http://127.0.0.1:8000/auth/activation/?temp_token={temp_token}')
 
 
-@auth.get('/activation/<temp_token:str>')
-async def user_activation(request: Request, temp_token):
+@auth.get('/activation/')
+async def user_activation(request: Request):
+    temp_token = request.args.get('temp_token')
     session = request.ctx.session
     user = await get_current_user(request, temp_token)
     if not user.is_active:
@@ -146,7 +147,7 @@ async def get_access_token(request: Request, body: AuthForm):
     password = body.password
     user = await authenticate_user(request, login, password)
     if not user.is_active:
-        return text(status=400, body='Inactive user')
+        return text(status=401, body='Inactive user')
 
     if not user:
         raise Unauthorized(

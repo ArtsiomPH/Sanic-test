@@ -10,7 +10,6 @@ from payment import payment
 
 from contextvars import ContextVar
 
-
 SQLALCHEMY_DB_URL = "postgresql+asyncpg://test_acc:12345@localhost/sanic_test"
 
 app = Sanic('test_app')
@@ -41,8 +40,3 @@ async def close_session(request, response):
     if hasattr(request.ctx, "session_ctx_token"):
         _base_model_session_ctx.reset(request.ctx.session_ctx_token)
         await request.ctx.session.close()
-
-
-
-
-

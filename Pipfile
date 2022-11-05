@@ -13,6 +13,7 @@ passlib = {extras = ["bcrypt"], version = "*"}
 sanic-ext = "*"
 pydantic = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
+pycryptodome = "*"
 
 [dev-packages]
 

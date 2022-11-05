@@ -58,7 +58,3 @@ class Transaction(BaseModel):
 
     def to_dict(self):
         return {'transaction_id': self.id, 'date': str(self.date), 'bill_id': self.bill_id, 'amount': self.amount}
-
-
-
-

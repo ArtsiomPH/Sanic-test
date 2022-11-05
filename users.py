@@ -48,15 +48,15 @@ async def change_user_status(request: Request, user_id: int):
 
 @users.get('/me')
 @active_user_only
-async def get_current_user_info(request):
-    current_user = request.ctx.current_user
+async def get_current_user_info(request: Request):
+    current_user: User = request.ctx.current_user
     return json(current_user.to_dict())
 
 
 @users.get('/me/transactions')
 @active_user_only
 async def get_current_user_transaction_history(request: Request):
-    current_user = request.ctx.current_user
+    current_user: User = request.ctx.current_user
     session = request.ctx.session
 
     bills = [bill['bill_id'] for bill in current_user.to_dict().get('bills')] if current_user.to_dict().get('bills') \

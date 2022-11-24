@@ -12,7 +12,7 @@ from contextvars import ContextVar
 
 SQLALCHEMY_DB_URL = "postgresql+asyncpg://test_acc:12345@localhost/sanic_test"
 
-app = Sanic('test_app')
+app = Sanic("test_app")
 app.blueprint(auth)
 app.blueprint(users)
 app.blueprint(goods)
